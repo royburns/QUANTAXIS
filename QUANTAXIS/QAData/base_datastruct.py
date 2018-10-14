@@ -367,6 +367,11 @@ class _quotation_base():
         except:
             return None
 
+    @property
+    @lru_cache()
+    def ndarray(self):
+        return self.to_numpy()
+
     '''
     ########################################################################################################
     计算统计相关的
@@ -590,6 +595,12 @@ class _quotation_base():
             return self.dicts[(QA_util_to_datetime(time), str(code))]
         except Exception as e:
             raise e
+
+    def reset_index(self):
+        return self.data.reset_index()
+
+    def rolling(self, N):
+        return self.groupby('code').rolling(N)
 
     def plot(self, code=None):
 
@@ -817,7 +828,7 @@ class _quotation_base():
         """
         转换DataStruct为list
         """
-        return np.asarray(self.data).tolist()
+        return self.data.reset_index().values.tolist()
 
     def to_pd(self):
         """
@@ -829,7 +840,7 @@ class _quotation_base():
         """
         转换DataStruct为numpy.ndarray
         """
-        return np.asarray(self.data)
+        return self.data.reset_index().values
 
     def to_json(self):
         """
@@ -873,8 +884,60 @@ class _quotation_base():
     #     return pd.concat(list(map(lambda x: func(
     #         self.data.loc[(slice(None), x), :], *arg, **kwargs), self.code))).sort_index()
 
+    def apply(self, func, *arg, **kwargs):
+        """func(DataStruct)
+
+        Arguments:
+            func {[type]} -- [description]
+
+        Returns:
+            [type] -- [description]
+        """
+
+        return func(self, *arg, **kwargs)
+
     def add_func(self, func, *arg, **kwargs):
+        """QADATASTRUCT的指标/函数apply入口
+
+        Arguments:
+            func {[type]} -- [description]
+
+        Returns:
+            [type] -- [description]
+        """
+
         return self.groupby(level=1, sort=False).apply(func, *arg, **kwargs)
+
+    def get_data(self, columns, type='ndarray', with_index=False):
+        """获取不同格式的数据
+
+        Arguments:
+            columns {[type]} -- [description]
+
+        Keyword Arguments:
+            type {str} -- [description] (default: {'ndarray'})
+            with_index {bool} -- [description] (default: {False})
+
+        Returns:
+            [type] -- [description]
+        """
+
+        res = self.select_columns(columns)
+        if type == 'ndarray':
+            if with_index:
+                return res.reset_index().values
+            else:
+                return res.values
+        elif type == 'list':
+            if with_index:
+                return res.reset_index().values.tolist()
+            else:
+                return res.values.tolist()
+        elif type == 'dataframe':
+            if with_index:
+                return res.reset_index()
+            else:
+                return res
 
     def pivot(self, column_):
         """增加对于多列的支持"""

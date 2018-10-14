@@ -69,6 +69,20 @@
 1. 增加了商品期权的分钟线获取
 2. 优化了QA_Account的存储
 3. 修复了QA_PortfolioView的bug
+4. DataStruct 增加了 rolling(N), ndarray的方法
+5. QAWEB增加对策略的存储功能
+6. QADataStruct增加get_data函数,方便获取各种格式的数据
+7. QADataStruct增加 apply函数 方便对自己应用函数
+8. 增加了对于QA_Performance插件中先卖后买算差价的支持
+9. QAMarket=QAShipaneBroker 支持通达信模拟客户端
+10. QAIndicator 增加Talib的形态识别指标
+11. 增加了qarun.exe 直接运行策略,实时输出
+12. QAWEB 增加了/command/run?command=xxxx的命令行
+13. QAWeb 增加了一个socket端口 /command/runbacktest
+
+不兼容修改:
+
+QAWeb 中/accounts/all 返回值修改 为list(之前是dict)
 
 ## 1.1.7 
 
