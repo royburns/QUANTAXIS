@@ -37,14 +37,14 @@ from QUANTAXIS.QAWeb.quotationhandles import (MonitorSocketHandler,
                                               RealtimeSocketHandler,
                                               SimulateSocketHandler)
 from QUANTAXIS.QAWeb.strategyhandlers import BacktestHandler, StrategyHandler
-from QUANTAXIS.QAWeb.tradehandles import AccModelHandler
+from QUANTAXIS.QAWeb.tradehandles import AccModelHandler, TradeInfoHandler
 from QUANTAXIS.QAWeb.userhandles import (PersonBlockHandler, SigninHandler,
                                          SignupHandler)
 
 
 class INDEX(QABaseHandler):
     def get(self):
-        self.render('.{}{}'.format(os.sep, "index.html"))
+        self.finish('.{}{}'.format(os.sep, "index.html"))
 
 
 def main():
@@ -61,7 +61,8 @@ def main():
             (r"/user/blocksetting", PersonBlockHandler),
             (r"/strategy/content", StrategyHandler),
             (r"/backtest/content", BacktestHandler),
-            (r"trade/account", AccModelHandler),
+            (r"/trade", AccModelHandler),
+            (r"/tradeinfo", TradeInfoHandler),
             (r"/realtime", RealtimeSocketHandler),
             (r"/simulate", SimulateSocketHandler),
             (r"/monitor", MonitorSocketHandler),
@@ -78,11 +79,6 @@ def main():
     """增加了对于非windows下的机器多进程的支持
     """
     http_server.start(1)
-    # if platform.system() != 'Windows':
-    #     http_server.start(0)
-    # else:
-    #     http_server.start(1)
-    # tornado.ioloop.IOLoop.instance().start()
     tornado.ioloop.IOLoop.current().start()
 
 
