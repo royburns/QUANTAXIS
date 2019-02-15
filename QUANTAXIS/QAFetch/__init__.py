@@ -37,8 +37,9 @@ from QUANTAXIS.QAFetch import QATdx as QATdx
 from QUANTAXIS.QAFetch import QAThs as QAThs
 from QUANTAXIS.QAFetch import QACrawler as QACL
 from QUANTAXIS.QAFetch import QAEastMoney as QAEM
+from QUANTAXIS.QAFetch import QAHexun as QAHexun
 from QUANTAXIS.QAFetch import QAfinancial
-
+from QUANTAXIS.QAFetch.base import get_stock_market
 
 def use(package):
     if package in ['wind']:
@@ -54,6 +55,8 @@ def use(package):
         return QATdx
     elif package in ['ths', 'THS']:
         return QAThs
+    elif package in ['HEXUN', 'Hexun', 'hexun']:
+        return QAHexun
 
 
 def QA_fetch_get_stock_day(package, code, start, end, if_fq='01', level='day', type_='pd'):
@@ -236,6 +239,12 @@ def QA_fetch_get_macroindex_list(package,):
     else:
         return 'Unsupport packages'
 
+def QA_fetch_get_globalindex_list(package,):
+    Engine = use(package)
+    if package in ['tdx', 'pytdx']:
+        return Engine.QA_fetch_get_globalindex_list()
+    else:
+        return 'Unsupport packages'
 
 def QA_fetch_get_exchangerate_list(package,):
     Engine = use(package)
@@ -291,6 +300,12 @@ def QA_fetch_get_future_min(package, code, start, end, frequence='1min'):
     else:
         return 'Unsupport packages'
 
+def QA_fetch_get_chibor(package, frequence):
+    Engine = use(package)
+    if package in ['Hexun', 'hexun']:
+        return Engine.QA_fetch_get_chibor(frequence)
+    else:
+        return 'Unsupport packages'
 
 QA_fetch_get_option_day = QA_fetch_get_future_day
 QA_fetch_get_option_min = QA_fetch_get_future_min
@@ -303,6 +318,7 @@ QA_fetch_get_hkfund_min = QA_fetch_get_future_min
 
 QA_fetch_get_hkindex_day = QA_fetch_get_future_day
 QA_fetch_get_hkindex_min = QA_fetch_get_future_min
+
 
 QA_fetch_get_usstock_day = QA_fetch_get_future_day
 QA_fetch_get_usstock_min = QA_fetch_get_future_min
@@ -319,3 +335,7 @@ QA_fetch_get_exchangerate_min = QA_fetch_get_future_min
 
 QA_fetch_get_macroindex_day = QA_fetch_get_future_day
 QA_fetch_get_macroindex_min = QA_fetch_get_future_min
+
+
+QA_fetch_get_globalindex_day = QA_fetch_get_future_day
+QA_fetch_get_globalindex_min = QA_fetch_get_future_min
