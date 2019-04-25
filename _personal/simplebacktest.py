@@ -32,7 +32,7 @@ import random
 Broker = QA.QA_BacktestBroker()
 User = QA.QA_User(username='admin', password='admin')
 Portfolio = User.new_portfolio('qatestportfolio')
-AC = Portfolio.new_account(account_cookie='simplebacktest', init_cash=200000)
+AC = Portfolio.new_account(account_cookie='simplebacktest3', init_cash=200000)
 """
 # 账户设置初始资金
 AC.reset_assets(assets)
@@ -106,7 +106,7 @@ def simple_backtest(AC, code, start, end):
 simple_backtest(AC, QA.QA_fetch_stock_block_adv(
 ).code[0:10], '2017-01-01', '2018-01-31')
 print(AC.message)
-User.save()
+AC.save()
 risk = QA.QA_Risk(AC)
 print(risk.message)
 risk.save()
