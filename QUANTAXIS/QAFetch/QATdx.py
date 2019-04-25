@@ -116,7 +116,7 @@ def select_best_ip():
     ipexclude = qasetting.get_config(
         section='IPLIST', option='exclude', default_value=alist)
 
-    exclude_from_stock_ip_list(json.loads(ipexclude.replace("'", "\"")))
+    exclude_from_stock_ip_list(ipexclude)
 
     ipdefault = qasetting.get_config(
         section='IPLIST', option='default', default_value=default_ip)
@@ -155,6 +155,55 @@ def get_ip_list_by_ping(ip_list=[], _type='stock'):
     best_ip = get_ip_list_by_multi_process_ping(ip_list, 1, _type)
     return best_ip[0]
 
+def get_best_ip_by_real_data_fetch(_type='stock'):
+    """
+    用特定的数据获取函数测试数据获得的时间,从而选择下载数据最快的服务器ip
+    默认使用特定品种1min的方式的获取
+    """
+    from QUANTAXIS.QAUtil.QADate import QA_util_today_str
+    import time
+    
+    #找到前两天的有效交易日期
+    pre_trade_date=QA_util_get_real_date(QA_util_today_str())
+    pre_trade_date=QA_util_get_real_date(pre_trade_date)
+    
+    # 某个函数获取的耗时测试
+    def get_stock_data_by_ip(ips):
+        start=time.time()
+        try:
+            QA_fetch_get_stock_transaction('000001',pre_trade_date,pre_trade_date,2,ips['ip'],ips['port'])
+            end=time.time()
+            return end-start
+        except:
+            return 9999
+
+    def get_future_data_by_ip(ips):
+        start=time.time()
+        try:
+            QA_fetch_get_future_transaction('RBL8',pre_trade_date,pre_trade_date,2,ips['ip'],ips['port'])
+            end=time.time()
+            return end-start
+        except:
+            return 9999
+
+    func,ip_list=0,0
+    if _type=='stock':
+        func,ip_list=get_stock_data_by_ip,stock_ip_list
+    else:
+        func,ip_list=get_future_data_by_ip,future_ip_list  
+    from pathos.multiprocessing import Pool
+    def multiMap(func,sequence):
+        res=[]
+        pool=Pool(4)
+        for i in sequence:
+            res.append(pool.apply_async(func,(i,)))
+        pool.close()
+        pool.join()
+        return list(map(lambda x:x.get(),res))
+   
+    res=multiMap(func,ip_list)
+    index=res.index(min(res))
+    return ip_list[index]
 
 def get_ip_list_by_multi_process_ping(ip_list=[], n=0, _type='stock'):
     ''' 根据ping排序返回可用的ip列表
@@ -400,13 +449,35 @@ def QA_fetch_get_stock_min(code, start, end, frequence='1min', ip=None, port=Non
         return data.assign(datetime=data['datetime'].apply(lambda x: str(x)))
 
 @retry(stop_max_attempt_number=3, wait_random_min=50, wait_random_max=100)
-def QA_fetch_get_stock_latest(code, ip=None, port=None):
+def QA_fetch_get_stock_latest(code, frequence='day', ip=None, port=None):
     ip, port = get_mainmarket_ip(ip, port)
     code = [code] if isinstance(code, str) else code
     api = TdxHq_API(multithread=True)
+
+    if frequence in ['w', 'W', 'Week', 'week']:
+        frequence = 5
+    elif frequence in ['month', 'M', 'm', 'Month']:
+        frequence = 6
+    elif frequence in ['Q', 'Quarter', 'q']:
+        frequence = 10
+    elif frequence in ['y', 'Y', 'year', 'Year']:
+        frequence = 11
+    elif frequence in ['5', '5m', '5min', 'five']:
+        frequence = 0
+    elif frequence in ['1', '1m', '1min', 'one']:
+        frequence = 8
+    elif frequence in ['15', '15m', '15min', 'fifteen']:
+        frequence = 1
+    elif frequence in ['30', '30m', '30min', 'half']:
+        frequence = 2
+    elif frequence in ['60', '60m', '60min', '1h']:
+        frequence = 3
+    else:
+        frequence = 9
+
     with api.connect(ip, port):
         data = pd.concat([api.to_df(api.get_security_bars(
-            9, _select_market_code(item), item, 0, 1)).assign(code=item) for item in code], axis=0)
+            frequence, _select_market_code(item), item, 0, 1)).assign(code=item) for item in code], axis=0)
         return data \
             .assign(date=pd.to_datetime(data['datetime']
                                         .apply(lambda x: x[0:10])), date_stamp=data['datetime']
@@ -799,6 +870,48 @@ def QA_fetch_get_index_min(code, start, end, frequence='1min', ip=None, port=Non
             .assign(type=type_).set_index('datetime', drop=False, inplace=False)[start:end]
         # data
         return data.assign(datetime=data['datetime'].apply(lambda x: str(x)))
+
+@retry(stop_max_attempt_number=3, wait_random_min=50, wait_random_max=100)
+def QA_fetch_get_index_latest(code, frequence='day', ip=None, port=None):
+    ip, port = get_mainmarket_ip(ip, port)
+    code = [code] if isinstance(code, str) else code
+    api = TdxHq_API(multithread=True)
+
+    if frequence in ['w', 'W', 'Week', 'week']:
+        frequence = 5
+    elif frequence in ['month', 'M', 'm', 'Month']:
+        frequence = 6
+    elif frequence in ['Q', 'Quarter', 'q']:
+        frequence = 10
+    elif frequence in ['y', 'Y', 'year', 'Year']:
+        frequence = 11
+    elif frequence in ['5', '5m', '5min', 'five']:
+        frequence = 0
+    elif frequence in ['1', '1m', '1min', 'one']:
+        frequence = 8
+    elif frequence in ['15', '15m', '15min', 'fifteen']:
+        frequence = 1
+    elif frequence in ['30', '30m', '30min', 'half']:
+        frequence = 2
+    elif frequence in ['60', '60m', '60min', '1h']:
+        frequence = 3
+    else:
+        frequence = 9
+
+    with api.connect(ip, port):
+        data = []
+        for item in code:
+            if str(item)[0] in ['5', '1']:  # ETF
+                data.append(api.to_df(api.get_security_bars(frequence, 1 if str(item)[0] in ['0', '8', '9', '5'] else 0, item, 0, 1)).assign(code=item))
+            else:
+                data.append(api.to_df(api.get_index_bars(frequence, 1 if str(item)[0] in ['0', '8', '9', '5'] else 0, item, 0, 1)).assign(code=item))
+        data = pd.concat(data, axis=0)
+        return data \
+            .assign(date=pd.to_datetime(data['datetime']
+                                        .apply(lambda x: x[0:10])), date_stamp=data['datetime']
+                    .apply(lambda x: QA_util_date_stamp(str(x[0:10])))) \
+            .set_index('date', drop=False) \
+            .drop(['year', 'month', 'day', 'hour', 'minute', 'datetime'], axis=1)
 
 
 def __QA_fetch_get_stock_transaction(code, day, retry, api):

@@ -31,7 +31,7 @@ import webbrowser
 import platform
 import configparser
 try:
-    from setuptools import setup
+    from setuptools import setup,Extension
 except:
     from distutils.core import setup
 """
@@ -95,6 +95,9 @@ LICENSE = "MIT"
 
 
 
+ext_modules = [
+    Extension('QUANTAXIS.QAARP.QAAccount', ['QUANTAXIS/QAARP/QAAccount.pyx']),
+    Extension('QUANTAXIS.QAMARKET.QAOrder', ['QUANTAXIS/QAMARKET/QAOrder.pyx'])]
 
 setup(
     name=NAME,
@@ -118,6 +121,7 @@ setup(
             'qarun=QUANTAXIS.QACmd.runner:run'
         ]
     },
+    ext_modules=ext_modules,
     # install_requires=requirements,
     keywords=KEYWORDS,
     author=AUTHOR,
