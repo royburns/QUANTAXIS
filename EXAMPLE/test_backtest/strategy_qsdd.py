@@ -14,6 +14,7 @@ import seaborn as sns
 #              '600398', '300498', '603609', '300673']
 code_list = QA.QA_fetch_stock_block_adv().code[0:50]
 start_date = '2017-01-01'
+# start_date = '2018-01-01'
 end_date = '2018-05-23'
 
 '''
@@ -56,7 +57,7 @@ def QSDD(dataframe, SHORT=12, LONG=26, M=9):
 
 
 # create account
-Account = QA.QA_Account()
+Account = QA.QA_Account('admin', 'qsdd')
 Broker = QA.QA_BacktestBroker()
 
 Account.reset_assets(1000000)

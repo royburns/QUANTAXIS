@@ -9,11 +9,6 @@ import numpy as np
 import pandas as pd
 import datetime
 st1=datetime.datetime.now()
-
-
-# stock_list = ['000001', '000002', '000004', '600000']
-stock_list = ['000793', '300059', '600885', '600079', '601899', '601808']
-
 # define the MACD strategy
 def MACD_JCSC(dataframe, SHORT=12, LONG=26, M=9):
     """
@@ -32,21 +27,24 @@ def MACD_JCSC(dataframe, SHORT=12, LONG=26, M=9):
 
 
 # create account
-Account = QA.QA_Account()
+user = QA.QA_User(username='admin', password='admin')
+portfolio = user.new_portfolio('qatestportfolio')
+
+
+Account = portfolio.new_account(account_cookie='macd_stock', init_cash=1000000)
 Broker = QA.QA_BacktestBroker()
 
-Account.reset_assets(1000000)
-Account.account_cookie = 'user_admin_macd'
-
+QA.QA_SU_save_strategy('MACD_JCSC','Indicator',Account.account_cookie)
 # get data from mongodb
-data = QA.QA_fetch_stock_day_adv(stock_list, '2018-01-01', '2018-09-20')
+data = QA.QA_fetch_stock_day_adv(
+    ['000001', '000002', '000004', '600000'], '2017-09-01', '2018-05-20')
 data = data.to_qfq()
 
 # add indicator
 ind = data.add_func(MACD_JCSC)
 # ind.xs('000001',level=1)['2018-01'].plot()
 
-data_forbacktest=data.select_time('2018-01-01','2018-09-20')
+data_forbacktest=data.select_time('2018-01-01','2018-05-01')
 
 
 for items in data_forbacktest.panel_gen:
@@ -94,26 +92,27 @@ print(Account.daily_hold)
 
 # create Risk analysis
 Risk = QA.QA_Risk(Account)
-print(Risk.message)
-print(Risk.assets)
-Risk.plot_assets_curve()
-plt=Risk.plot_dailyhold()
-plt.show()
-plt1=Risk.plot_signal()
-plt.show()
 
-performance=QA.QA_Performance(Account)
-plt=performance.plot_pnlmoney(performance.pnl_fifo)
-plt.show()
+user.save()
+Risk.save()
+
+
+# print(Risk.message)
+# print(Risk.assets)
+# Risk.plot_assets_curve()
+# plt=Risk.plot_dailyhold()
+# plt.show()
+# plt1=Risk.plot_signal()
+# plt.show()
+
+# performance=QA.QA_Performance(Account)
+# plt=performance.plot_pnlmoney(performance.pnl_fifo)
+# plt.show()
 # Risk.assets.plot()
 # Risk.benchmark_assets.plot()
 
 # save result
-Account.save()
-Risk.save()
-QA.QA_SU_save_strategy('MACD_JCSC', account_cookie=Account.account_cookie)
 
-
-account_info = QA.QA_fetch_account({'account_cookie': 'user_admin_macd'})
-account = QA.QA_Account().from_message(account_info[0])
-print(account)
+#account_info = QA.QA_fetch_account({'account_cookie': 'user_admin_macd'})
+#account = QA.QA_Account().from_message(account_info[0])
+#print(account)
