@@ -59,15 +59,15 @@ def caopanshou(dataframe, SHORT=12, LONG=26, M=9):
     # return pd.DataFrame({'DIFF': DIFF, 'DEA': DEA, 'MACD': MACD, 'CROSS_JC': CROSS_JC, 'CROSS_SC': CROSS_SC, 'ZERO': ZERO})
 
 
-date_start = '2018-06-01'
-date_start_backtest = '2019-01-01'
+date_start = '2016-06-01'
+date_start_backtest = '2017-01-01'
 date_end = '2019-04-26'
 # create account
 user = QA.QA_User(username='admin', password='admin')
 portfolio = user.new_portfolio('portfolio_caopanshou')
 
 
-Account = portfolio.new_account(account_cookie='account_caopanshou2', init_cash=1000000)
+Account = portfolio.new_account(account_cookie='account_baima_20190428', init_cash=1000000)
 Account.end_ = date_end
 Broker = QA.QA_BacktestBroker()
 
@@ -79,7 +79,7 @@ data = QA.QA_fetch_stock_day_adv(
     # ['000001', '000002', '000004', '600000'], '2017-01-01', '2019-04-24')
     # ['600596', '002017'], date_start, date_end)
     # ['600737', '601228', '300094', '300383', '002340', '002256', '002027', '002366'], date_start, date_end)
-    ['600776', '002017'], date_start, date_end)
+    ['000651', '601155'], date_start, date_end) # 格力电器 000651， 新城控股 601155， 分众传媒 002027
 data = data.to_qfq()
 
 # add indicator
@@ -102,7 +102,7 @@ for items in data_forbacktest.panel_gen:
                 amount=1000,
                 towards=QA.ORDER_DIRECTION.BUY,
                 price=item.close[0], # money need price
-                money=100000,
+                money=490000,
                 order_model=QA.ORDER_MODEL.CLOSE,
                 # amount_model=QA.AMOUNT_MODEL.BY_AMOUNT
                 amount_model=QA.AMOUNT_MODEL.BY_MONEY
