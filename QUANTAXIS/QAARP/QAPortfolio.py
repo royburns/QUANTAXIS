@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2018 yutiansut/QUANTAXIS
+# Copyright (c) 2016-2019 yutiansut/QUANTAXIS
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -358,6 +358,14 @@ class QA_Portfolio(QA_Account):
                     return acc
                 else:
                     return self.get_account_by_cookie(account_cookie)
+
+    def create_stockaccount(self, account_cookie, init_cash, init_hold):
+        return self.new_account(account_cookie= account_cookie, init_cash=init_cash, init_hold=init_hold,
+            market_type=MARKET_TYPE.STOCK_CN,allow_t0=False,)
+
+    def create_futureaccount(self, account_cookie, init_cash, init_hold, reload):
+        return self.new_account(account_cookie= account_cookie, init_cash=init_cash, init_hold=init_hold,
+            market_type=MARKET_TYPE.FUTURE_CN,allow_t0=False,)
 
     def get_account_by_cookie(self, cookie):
         '''

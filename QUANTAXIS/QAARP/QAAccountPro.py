@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2018 yutiansut/QUANTAXIS
+# Copyright (c) 2016-2019 yutiansut/QUANTAXIS
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -1175,7 +1175,7 @@ class QA_AccountPRO(QA_Worker):
             [type] -- [description]
         """
 
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!receive deal')
+        print('QAACCOUNTPRO ==> receive deal')
 
         trade_time = str(trade_time)
         code = str(code)

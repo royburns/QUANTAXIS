@@ -70,7 +70,7 @@ class QA_Position():
                  code='000001',
                  account_cookie='quantaxis',
                  portfolio_cookie='portfolio',
-                 user_cookie='quantaxis',
+                 username='quantaxis',
                  moneypreset=100000,  # 初始分配资金
                  frozen=None,
                  moneypresetLeft=None,
@@ -105,6 +105,9 @@ class QA_Position():
                  name=None,
                  auto_reload=False,
                  allow_exceed=False,
+
+                 spms_id =None,
+                 oms_id = None,
                  *args,
                  **kwargs
 
@@ -113,7 +116,7 @@ class QA_Position():
         self.code = code
         self.account_cookie = account_cookie
         self.portfolio_cookie = portfolio_cookie
-        self.user_cookie = user_cookie
+        self.username = username
         self.time = ''
         self.market_preset = MARKET_PRESET().get_code(self.code)
         self.position_id = str(
@@ -168,6 +171,8 @@ class QA_Position():
         self.trades = [] if trades is None else trades
         self.orders = {} if orders is None else orders
         self.frozen = {} if frozen is None else frozen
+        self.spms_id = spms_id
+        self.oms_id = oms_id
         if auto_reload:
             self.reload()
         self.allow_exceed = allow_exceed
@@ -314,15 +319,18 @@ class QA_Position():
             'instrument_id': self.code,
             'user_id': self.account_cookie,
             'portfolio_cookie': self.portfolio_cookie,
-            'user_cookie': self.user_cookie,
+            'username': self.username,
             'position_id': self.position_id,
             'account_cookie': self.account_cookie,
             'frozen': self.frozen,
             'name': self.name,
+            'spms_id': self.spms_id,
+            'oms_id': self.oms_id,
             'market_type': self.market_type,
             'exchange_id': self.exchange_id,  # 交易所ID
             'moneypreset': self.moneypreset,
             'moneypresetLeft': self.moneypresetLeft,
+            'lastupdatetime': str(self.time),
             # 持仓量
             'volume_long_today': self.volume_long_today,
             'volume_long_his': self.volume_long_his,
@@ -388,9 +396,9 @@ class QA_Position():
     def order_check(self, amount: float, price: float, towards: int, order_id: str) -> bool:
         res = False
         if towards == ORDER_DIRECTION.BUY_CLOSE:
-            print('buyclose')
-            print(self.volume_short - self.volume_short_frozen)
-            print(amount)
+            # print('buyclose')
+            #print(self.volume_short - self.volume_short_frozen)
+            # print(amount)
             if (self.volume_short - self.volume_short_frozen) >= amount:
                 # check
                 self.volume_short_frozen_today += amount
@@ -405,9 +413,9 @@ class QA_Position():
             else:
                 print('BUYCLOSETODAY 今日仓位不足')
         elif towards == ORDER_DIRECTION.SELL_CLOSE:
-            print('sellclose')
-            print(self.volume_long - self.volume_long_frozen)
-            print(amount)
+            # print('sellclose')
+            #print(self.volume_long - self.volume_long_frozen)
+            # print(amount)
             if (self.volume_long - self.volume_long_frozen) >= amount:
                 self.volume_long_frozen_today += amount
                 res = True
@@ -416,9 +424,9 @@ class QA_Position():
 
         elif towards == ORDER_DIRECTION.SELL_CLOSETODAY:
             if (self.volume_long_today - self.volume_short_frozen_today) >= amount:
-                print('sellclosetoday')
-                print(self.volume_long_today - self.volume_long_frozen)
-                print(amount)
+                # print('sellclosetoday')
+                #print(self.volume_long_today - self.volume_long_frozen)
+                # print(amount)
                 self.volume_long_frozen_today += amount
                 return True
             else:
@@ -448,7 +456,7 @@ class QA_Position():
     def send_order(self, amount: float, price: float, towards: int):
         order_id = str(uuid.uuid4())
         if self.order_check(amount, price, towards, order_id):
-            print('order check success')
+            #print('order check success')
             order = {
                 'position_id': str(self.position_id),
                 'account_cookie': self.account_cookie,
@@ -464,7 +472,8 @@ class QA_Position():
             self.orders[order_id] = order
             return order
         else:
-            return RuntimeError('ORDER CHECK FALSE: {}'.format(self.code))
+            print(RuntimeError('ORDER CHECK FALSE: {}'.format(self.code)))
+            return False
 
     def update_pos(self, price, amount, towards):
         """支持股票/期货的更新仓位
@@ -537,7 +546,7 @@ class QA_Position():
             5. 增加持仓cost
             6. 增加空单仓位
             """
-            temp_margin =temp_cost * \
+            temp_margin = temp_cost * \
                 self.market_preset['sell_frozen_coeff']
             self.margin_short += temp_margin
             # 重新计算开仓/持仓成本
@@ -555,7 +564,7 @@ class QA_Position():
             self.position_cost_short += temp_cost
             self.volume_short_today += amount
             self.moneypresetLeft -= temp_margin
-            
+
         elif towards == ORDER_DIRECTION.BUY_CLOSETODAY:
             if self.volume_short_today > amount:
                 self.position_cost_short = self.position_cost_short * \
@@ -676,7 +685,7 @@ class QA_Position():
         res = DATABASE.positions.find_one({
             'account_cookie': self.account_cookie,
             'portfolio_cookie': self.portfolio_cookie,
-            'user_cookie': self.user_cookie,
+            'username': self.username,
             'position_id': self.position_id
         })
         if res is None:
@@ -690,7 +699,7 @@ class QA_Position():
             account_cookie=message['account_cookie'],
             frozen=message['frozen'],
             portfolio_cookie=message['portfolio_cookie'],
-            user_cookie=message['user_cookie'],
+            username=message['username'],
             moneypreset=message['moneypreset'],  # 初始分配资金
             moneypresetLeft=message['moneypresetLeft'],
             volume_long_today=message['volume_long_today'],
@@ -778,7 +787,7 @@ class QA_Position():
             self.trades.append(transaction)
         except Exception as e:
             raise e
-
+        
     def on_pirce_change(self, price):
         self.last_price = price
 
@@ -789,7 +798,7 @@ class QA_Position():
             bar {[type]} -- [description]
         """
         self.last_price = bar['close']
-        print(self.realtime_message)
+        # print(self.realtime_message)
         pass
 
     def on_tick(self, tick):
@@ -799,7 +808,7 @@ class QA_Position():
             tick {[type]} -- [description]
         """
         self.last_price = tick['LastPrice']
-        print(self.realtime_message)
+        # print(self.realtime_message)
         pass
 
     def on_signal(self, signal):
