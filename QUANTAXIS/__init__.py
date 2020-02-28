@@ -31,7 +31,7 @@ by yutiansut
 2017/4/8
 """
 
-__version__ = '1.6.9'
+__version__ = '1.9.8'
 __author__ = 'yutiansut'
 
 import argparse
@@ -110,7 +110,9 @@ from QUANTAXIS.QAFetch import (
     QA_fetch_get_bond_day,
     QA_fetch_get_bond_min,
     QA_fetch_get_bond_list,
+    QA_fetch_get_bond_realtime,
     QA_fetch_get_future_realtime,
+    QA_fetch_get_future_domain,
     QA_fetch_get_future_transaction,
     QA_fetch_get_future_transaction_realtime,
     QA_fetch_get_globalfuture_day,
@@ -131,6 +133,7 @@ from QUANTAXIS.QAFetch import (
     QA_fetch_get_index_day,
     QA_fetch_get_index_list,
     QA_fetch_get_index_min,
+    QA_fetch_get_index_realtime,
     QA_fetch_get_macroindex_day,
     QA_fetch_get_macroindex_list,
     QA_fetch_get_macroindex_min,
@@ -179,6 +182,7 @@ from QUANTAXIS.QAFetch.QAQuery import (
     QA_fetch_quotations,
     QA_fetch_stock_block,
     QA_fetch_stock_day,
+    QA_fetch_stock_adj,
     QA_fetch_stock_full,
     QA_fetch_stock_info,
     QA_fetch_stock_list,
@@ -240,6 +244,7 @@ from QUANTAXIS.QAUtil import (  # QAPARAMETER
     OUTPUT_FORMAT, RUNNING_ENVIRONMENT, RUNNING_STATUS, TRADE_STATUS,
     QA_Setting, QA_util_calc_time, QA_util_cfg_initial, QA_util_code_tolist,
     QA_util_code_tostr, QA_util_date_gap, QA_util_date_int2str,
+    QA_util_code_adjust_ctp,
     QA_util_date_stamp, QA_util_date_str2int, QA_util_date_today,
     QA_util_date_valid, QA_util_dict_remove_key, QA_util_diff_list,
     QA_util_file_md5, QA_util_format_date2str, QA_util_get_cfg,
@@ -262,7 +267,8 @@ from QUANTAXIS.QAUtil import (  # QAPARAMETER
     QA_util_to_datetime, QA_util_to_json_from_pandas,
     QA_util_to_list_from_numpy, QA_util_to_list_from_pandas,
     QA_util_to_pandas_from_json, QA_util_to_pandas_from_list, QA_util_web_ping,
-    QATZInfo_CN, future_ip_list, info_ip_list, stock_ip_list, trade_date_sse)
+    QATZInfo_CN, future_ip_list, info_ip_list, stock_ip_list, trade_date_sse,
+    QA_util_get_next_period)
 
 # Factor
 from QUANTAXIS.QAFactor.analyze import FactorAnalyzer
