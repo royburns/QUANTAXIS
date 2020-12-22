@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2019 yutiansut/QUANTAXIS
+# Copyright (c) 2016-2020 yutiansut/QUANTAXIS
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -77,6 +77,11 @@ class EXCHANGE_ID():
     CZCE = 'CZCE'  # 郑商所
     CFFEX = 'CFFEX'  # 中金所
     INE = 'INE'  # 能源中心
+    HUOBI = 'huobi' # 火币Pro
+    BINANCE = 'binance' # 币安
+    BITMEX = 'bitmex' # BITMEX
+    BITFINEX = 'BITFINEX' # BITFINEX
+    OKEX = 'OKEx' # OKEx
 
 
 class OFFSET():

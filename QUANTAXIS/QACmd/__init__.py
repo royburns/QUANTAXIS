@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2019 yutiansut/QUANTAXIS
+# Copyright (c) 2016-2020 yutiansut/QUANTAXIS
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,51 +36,53 @@ from QUANTAXIS.QACmd.runner import run_backtest, run
 from QUANTAXIS.QAApplication.QAAnalysis import QA_backtest_analysis_backtest
 from QUANTAXIS.QAUtil import QA_util_log_info, QA_Setting, QA_util_mongo_initial
 from QUANTAXIS.QASU.main import (
-    QA_SU_save_stock_list,
-    QA_SU_save_stock_min,
-    QA_SU_save_stock_transaction,
-    QA_SU_save_index_transaction,
-    QA_SU_save_single_stock_min,
-    QA_SU_save_stock_xdxr,
-    QA_SU_save_stock_block,
-    QA_SU_save_stock_info,
-    QA_SU_save_stock_info_tushare,
-    QA_SU_save_stock_day,
-    QA_SU_save_single_stock_day,
-    QA_SU_save_index_day,
-    QA_SU_save_single_index_day,
-    QA_SU_save_index_min,
-    QA_SU_save_single_index_min,
-    QA_SU_save_future_list,
-    QA_SU_save_index_list,
-    QA_SU_save_etf_list,
+    QA_SU_save_bond_day,
+    QA_SU_save_bond_list,
+    QA_SU_save_bond_min,
     QA_SU_save_etf_day,
-    QA_SU_save_single_etf_day,
+    QA_SU_save_etf_list,
     QA_SU_save_etf_min,
-    QA_SU_save_single_etf_min,
     QA_SU_save_financialfiles,
-    QA_SU_save_option_50etf_day,
-    QA_SU_save_option_50etf_min,
+    QA_SU_save_future_day_all,
+    QA_SU_save_future_day,
+    QA_SU_save_future_list,
+    QA_SU_save_future_min_all,
+    QA_SU_save_future_min,
+    QA_SU_save_index_day,
+    QA_SU_save_index_list,
+    QA_SU_save_index_min,
+    QA_SU_save_index_transaction,
     QA_SU_save_option_300etf_day,
     QA_SU_save_option_300etf_min,
+    QA_SU_save_option_50etf_day,
+    QA_SU_save_option_50etf_min,
     QA_SU_save_option_commodity_day,
     QA_SU_save_option_commodity_min,
     QA_SU_save_option_contract_list,
     QA_SU_save_option_day_all,
     QA_SU_save_option_min_all,
-    QA_SU_save_future_day,
-    QA_SU_save_future_min,
-    QA_SU_save_future_min_all,
-    QA_SU_save_future_day_all,
     QA_SU_save_report_calendar_day,
     QA_SU_save_report_calendar_his,
+    QA_SU_save_single_bond_day,
+    QA_SU_save_single_bond_min,
+    QA_SU_save_single_etf_day,
+    QA_SU_save_single_etf_min,
+    QA_SU_save_single_future_day,
+    QA_SU_save_single_future_min,
+    QA_SU_save_single_index_day,
+    QA_SU_save_single_index_min,
+    QA_SU_save_single_stock_day,
+    QA_SU_save_single_stock_min,
+    QA_SU_save_stock_block,
+    QA_SU_save_stock_day,
     QA_SU_save_stock_divyield_day,
     QA_SU_save_stock_divyield_his,
-    QA_SU_save_bond_day,
-    QA_SU_save_single_bond_day,
-    QA_SU_save_bond_list,
-    QA_SU_save_bond_min,
-    QA_SU_save_single_bond_min
+    QA_SU_save_stock_info_tushare,
+    QA_SU_save_stock_info,
+    QA_SU_save_stock_list,
+    QA_SU_save_stock_min,
+    QA_SU_save_stock_transaction,
+    QA_SU_save_stock_xdxr
 )
 from QUANTAXIS.QASU.save_binance import QA_SU_save_binance_symbol, QA_SU_save_binance_1hour, \
     QA_SU_save_binance_1day, QA_SU_save_binance_1min, QA_SU_save_binance
@@ -94,6 +96,12 @@ from QUANTAXIS.QASU.save_okex import QA_SU_save_okex_symbol, QA_SU_save_okex_1ho
 
 # 东方财富爬虫
 from QUANTAXIS.QASU.main import (QA_SU_crawl_eastmoney)
+
+# Tushare 基本面数据
+from QUANTAXIS.QAFactor.localize import (QA_ts_update_namechange,
+                                         QA_ts_update_industry,
+                                         QA_ts_update_stock_basic,
+                                         QA_ts_update_inc)
 
 from QUANTAXIS import __version__
 
@@ -134,6 +142,7 @@ class CLI(cmd.Cmd):
             'Successfully generate QADEMO in : {}, for more examples, please visit https://github.com/quantaxis/qademo'
             .format(now_path)
         )
+        self.lastcmd = ''
 
     def help_examples(self):
         print('make a sample backtest framework')
@@ -145,6 +154,7 @@ class CLI(cmd.Cmd):
         )
         with open("{}{}update_x.py".format(now_path, os.sep), "wb") as code:
             code.write(data.content)
+        self.lastcmd = ''
 
     def do_download_updateall(self, arg):
         now_path = os.getcwd()
@@ -153,9 +163,11 @@ class CLI(cmd.Cmd):
         )
         with open("{}{}update_all.py".format(now_path, os.sep), "wb") as code:
             code.write(data.content)
+        self.lastcmd = ''
 
     def do_drop_database(self, arg):
         QA_util_mongo_initial()
+        self.lastcmd = ''
 
     def help_drop_database(self):
         print('drop quantaxis\'s databases')
@@ -178,6 +190,7 @@ class CLI(cmd.Cmd):
 
         except:
             pass
+        self.lastcmd = ''
 
     def help_clean(self):
         QA_util_log_info('Clean the old backtest reports and logs')
@@ -237,6 +250,7 @@ class CLI(cmd.Cmd):
             else:
                 print("❌crawl 命令格式不正确！")
                 self.print_crawl_usage()
+        self.lastcmd = ''
 
     def print_save_usage(self):
         print(
@@ -246,19 +260,26 @@ class CLI(cmd.Cmd):
             命令格式：save day  : save stock_day/xdxr index_day etf_day stock_list/index_list \n\
             命令格式：save min  : save stock_min/xdxr index_min etf_min stock_list/index_list \n\
             命令格式: save future: save future_day/min/list \n\
-            命令格式: save ox: save option_contract_list/option_day/option_min/option_commodity_day/option_commodity_min \n\
+            命令格式: save option: save option_contract_list/option_day_all/option_min_all \n\
             命令格式: save transaction: save stock_transaction and index_transaction (Warning: Large Disk Space Required) \n\
+            命令格式: save ts_all: save ts_industry and ts_namechange and ts_stock_basic and ts_financial_reports \n\
+            命令格式: save ts_financial: save ts_financial_reports \n\
             ------------------------------------------------------------ \n\
+            命令格式：save stock_xdxr : 保存日除权除息数据 \n\
             命令格式：save stock_day  : 保存日线数据 \n\
             命令格式：save single_stock_day  : 保存单个股票日线数据 \n\
-            命令格式：save stock_xdxr : 保存日除权除息数据 \n\
             命令格式：save stock_min  : 保存分钟线数据 \n\
             命令格式：save single_stock_min  : 保存单个股票分钟线数据 \n\
             命令格式：save index_day  : 保存指数日线数据 \n\
+            命令格式：save single_index_day  : 保存单个指数日线数据 \n\
             命令格式：save index_min  : 保存指数分钟线数据 \n\
             命令格式：save single_index_min  : 保存单个指数分钟线数据 \n\
             命令格式：save future_day  : 保存期货日线数据 \n\
+            命令格式：save future_day_all  : 保存期货日线数据(含合约信息,不包括已经过期摘牌的合约数据) \n\
+            命令格式：save single_future_day  : 保存单个期货日线数据 \n\
             命令格式：save future_min  : 保存期货分钟线数据 \n\
+            命令格式：save future_min_all  : 保存期货分钟线数据(含合约信息,不包括已经过期摘牌的合约数据) \n\
+            命令格式：save single_future_min  : 保存单个期货分钟线数据 \n\
             命令格式：save etf_day    : 保存ETF日线数据 \n\
             命令格式：save single_etf_day    : 保存单个ETF日线数据 \n\
             命令格式：save etf_min    : 保存ET分钟数据 \n\
@@ -267,12 +288,12 @@ class CLI(cmd.Cmd):
             命令格式：save stock_info : 保存tushare数据接口获取的股票列表 \n\
             命令格式：save financialfiles : 保存高级财务数据(自1996年开始) \n\
             命令格式：save option_contract_list 保存上市的期权合约信息（不包括已经过期摘牌的合约数据）\n\
-            命令格式：save 50etf_option_day : 保存上海证券交易所50ETF期权日线数据（不包括已经过期摘牌的数据） \n\
-            命令格式：save 50etf_option_min : 保存上海证券交易所50ETF期权分钟线数据（不包括已经过期摘牌的数据） \n\
-            命令格式：save 300etf_option_day : 保存上海证券交易所300ETF期权日线数据（不包括已经过期摘牌的数据） \n\
-            命令格式：save 300etf_option_min : 保存上海证券交易所300ETF期权分钟线数据（不包括已经过期摘牌的数据） \n\
-            命令格式：save option_commodity_day : 保存商品期权日线数据（不包括已经过期摘牌的数据） \n\
-            命令格式：save option_commodity_min : 保存商品期权分钟线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save 50etf_option_day : 保存上海证券交易所50ETF期权日线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save 50etf_option_min : 保存上海证券交易所50ETF期权分钟线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save 300etf_option_day : 保存上海证券交易所300ETF期权日线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save 300etf_option_min : 保存上海证券交易所300ETF期权分钟线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save option_commodity_day : 保存商品期权日线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save option_commodity_min : 保存商品期权分钟线数据（不包括已经过期摘牌的数据） \n\
             命令格式：save option_day_all : 保存上海证券交易所所有期权日线数据（不包括已经过期摘牌的数据） \n\
             命令格式：save option_min_all : 保存上海证券交易所所有期权分钟数据（不包括已经过期摘牌的数据） \n\
             命令格式：save index_list : 保存指数列表 \n\
@@ -429,6 +450,29 @@ class CLI(cmd.Cmd):
                 QA_SU_save_stock_block('tdx')
                 QA_SU_save_future_list('tdx')
                 # QA_SU_save_stock_info('tdx')
+            elif len(arg) == 1 and arg[0] == 'ts_all':
+                if QA_Setting().client.quantaxis.user_list.find(
+                    {'username': 'admin'}).count() == 0:
+                    QA_Setting().client.quantaxis.user_list.insert(
+                        {
+                            'username': 'admin',
+                            'password': 'admin'
+                        }
+                    )
+                QA_ts_update_inc()
+                QA_ts_update_stock_basic()
+                QA_ts_update_namechange()
+                QA_ts_update_industry()
+            elif len(arg) == 1 and arg[0] == 'ts_financial':
+                if QA_Setting().client.quantaxis.user_list.find(
+                        {'username': 'admin'}).count() == 0:
+                    QA_Setting().client.quantaxis.user_list.insert(
+                            {
+                                'username': 'admin',
+                                'password': 'admin'
+                            }
+                    )
+                QA_ts_update_inc()
             elif len(arg) == 1 and arg[0] == "binance":
                 QA_SU_save_binance_symbol()
                 QA_SU_save_binance_1day()
@@ -533,22 +577,31 @@ class CLI(cmd.Cmd):
                 QA_SU_save_option_commodity_day('tdx')
             elif len(arg) == 1 and arg[0] == 'option_commodity_min':
                 QA_SU_save_option_commodity_min('tdx')
-            elif len(arg) == 1 and arg[0] in ['ox', 'OX', 'oX', 'Ox']:
+
+            elif len(arg) == 1 and arg[0] in ['option']:
                 QA_SU_save_option_contract_list('tdx')
-                QA_SU_save_option_50etf_day('tdx')
-                QA_SU_save_option_50etf_min('tdx')
-                QA_SU_save_option_300etf_day('tdx')
-                QA_SU_save_option_300etf_min('tdx')
-                QA_SU_save_option_commodity_day('tdx')
-                QA_SU_save_option_commodity_min('tdx')
+                QA_SU_save_option_day_all('tdx')
+                QA_SU_save_option_min_all('tdx')
+
+            elif len(arg) == 1 and arg[0] in ['option_contract_list']:
+                QA_SU_save_option_contract_list('tdx')
+
+            elif len(arg) == 1 and arg[0] in ['option_day_all']:
+                QA_SU_save_option_day_all('tdx')
+            elif len(arg) == 1 and arg[0] in ['option_min_all']:
+                QA_SU_save_option_min_all('tdx')
             elif len(arg) == 2 and arg[0] == 'single_stock_day':
                 QA_SU_save_single_stock_day(arg[1], 'tdx')
+            elif len(arg) == 2 and arg[0] == 'single_future_day':
+                QA_SU_save_single_future_day(arg[1], 'tdx')
             elif len(arg) == 2 and arg[0] == 'single_index_day':
                 QA_SU_save_single_index_day(arg[1], 'tdx')
             elif len(arg) == 2 and arg[0] == 'single_etf_day':
                 QA_SU_save_single_etf_day(arg[1], 'tdx')
             elif len(arg) == 2 and arg[0] == 'single_stock_min':
                 QA_SU_save_single_stock_min(arg[1], 'tdx')
+            elif len(arg) == 2 and arg[0] == 'single_future_min':
+                QA_SU_save_single_future_min(arg[1], 'tdx')
             elif len(arg) == 2 and arg[0] == 'single_index_min':
                 QA_SU_save_single_index_min(arg[1], 'tdx')
             elif len(arg) == 2 and arg[0] == 'single_etf_min':
@@ -574,6 +627,7 @@ class CLI(cmd.Cmd):
                         except:
                             print("❌命令格式不正确！")
                             self.print_save_usage()
+        self.lastcmd = ''
 
     def help_save(self):
         QA_util_log_info('Save all the stock data from pytdx')

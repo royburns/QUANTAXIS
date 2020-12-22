@@ -129,6 +129,18 @@ services:
         command:
             ['/root/QUANTAXIS_RealtimeCollector/docker/wait_for_it.sh', 'qaeventmq:5672', '--' ,'/root/QUANTAXIS_RealtimeCollector/docker/start_collector.sh']
 
+            
+    # qamarketcollector:
+    #     image: daocloud.io/quantaxis/qamarket-rs:latest
+    #     depends_on:
+    #         - mgdb
+    #         - qaeventmq
+    #     environment:
+    #         - MONGODB=mgdb
+    #         - EventMQ_IP=qaeventmq
+    #     networks:
+    #         qanetwork:
+    #             ipv4_address: 172.19.0.8
 
     qatrader:
         image: daocloud.io/quantaxis/qatrader:latest
@@ -153,26 +165,26 @@ services:
                 ipv4_address: 172.19.0.9
 
 
-    # editer:
-    #     image: yutiansut/qaeditor:latest
-    #     container_name: qaeditor
-    #     networks: 
-    #         qanetwork:
-    #             ipv4_address: 172.19.0.14
-    #     ports: 
-    #         - "3001:3000"
-    #     environment:
-    #         - TZ=Asia/Shanghai
-    #         - LANG=C.UTF-8
-    #         - MONGODB=mgdb
-    #         - QARUN=qaweb
-    #         - QAPUBSUB_IP=qaeventmq
-    #         - QAPUBSUB_PORT=5672
-    #         - QAPUBSUB_USER=admin
-    #         - QAPUBSUB_PWD=admin
-    #     restart: always
-    #     volumes: 
-    #         - qacode:/home/project
+    editer:
+        image: daocloud.io/quantaxis/qaeditor:latest
+        container_name: qaeditor
+        networks: 
+            qanetwork:
+                ipv4_address: 172.19.0.14
+        ports: 
+            - "3001:3000"
+        environment:
+            - TZ=Asia/Shanghai
+            - LANG=C.UTF-8
+            - MONGODB=mgdb
+            - QARUN=qaweb
+            - QAPUBSUB_IP=qaeventmq
+            - QAPUBSUB_PORT=5672
+            - QAPUBSUB_USER=admin
+            - QAPUBSUB_PWD=admin
+        restart: always
+        volumes: 
+            - qacode:/home/project
 
 
 volumes:

@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2019 yutiansut/QUANTAXIS
+# Copyright (c) 2016-2020 yutiansut/QUANTAXIS
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -196,7 +196,7 @@ def QA_util_date_stamp(date):
     return:
         time
     """
-    datestr = str(date)[0:10]
+    datestr = pd.Timestamp(date).strftime("%Y-%m-%d")
     date = time.mktime(time.strptime(datestr, '%Y-%m-%d'))
     return date
 
